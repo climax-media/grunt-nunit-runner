@@ -17,6 +17,6 @@ module.exports = function(grunt) {
             options: { commitMessage: 'NPM Release v<%= version %>' }
         }
     });
-
+    
     grunt.registerTask('default', [ 'jshint', 'mochaTest' ]);
 }
