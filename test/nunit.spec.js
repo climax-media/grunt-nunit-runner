@@ -28,4 +28,20 @@ describe('nunit', function() {
 
     });
 
+    it('should detect exe name correctly', function() {
+
+        expect(nunit.buildCommand(['asm.dll'], { version: 3, platform: 'x86' }).path).to.be('nunit3-console.exe');
+        expect(nunit.buildCommand(['asm.dll'], { version: 3, platform: 'x64' }).path).to.be('nunit3-console.exe');
+        expect(nunit.buildCommand(['asm.dll'], { version: 3 }).path).to.be('nunit3-console.exe');
+        
+        expect(nunit.buildCommand(['asm.dll'], { version: 2, platform: 'x86' }).path).to.be('nunit-console-x86.exe');
+        expect(nunit.buildCommand(['asm.dll'], { version: 2, platform: 'x64' }).path).to.be('nunit-console.exe');
+        expect(nunit.buildCommand(['asm.dll'], { version: 2 }).path).to.be('nunit-console.exe');
+        
+        expect(nunit.buildCommand(['asm.dll'], { platform: 'x86' }).path).to.be('nunit-console-x86.exe');
+        expect(nunit.buildCommand(['asm.dll'], { platform: 'x64' }).path).to.be('nunit-console.exe');
+        expect(nunit.buildCommand(['asm.dll'], {}).path).to.be('nunit-console.exe');
+        
+    });
+    
 });

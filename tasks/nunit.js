@@ -38,6 +38,7 @@ exports.findTestAssemblies = function(files, options) {
 exports.buildCommand = function(assemblies, options) {
 
     var nunit = '';
+    var args = assemblies.map(function(assembly) { return '"' + assembly + '"'; });
 
     if(!options.version || options.version < 3) {
         nunit = options.platform === 'x86' ? 'nunit-console-x86.exe' : 'nunit-console.exe';
@@ -50,8 +51,6 @@ exports.buildCommand = function(assemblies, options) {
     if (options.path) nunit = path.join(options.path, nunit);
 
     nunit = nunit.replace(/\\/g, path.sep);
-
-    var args = assemblies.map(function(assembly) { return '"' + assembly + '"'; });
 
     if (options.run && options.run.length > 0) args.push('/run:"' + options.run.join(',') + '"');
     if (options.runlist) args.push('/runlist:"' + options.runlist + '"');
