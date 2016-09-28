@@ -40,25 +40,31 @@ exports.buildCommand = function(assemblies, options) {
     var nunit = '';
     var args = assemblies.map(function(assembly) { return '"' + assembly + '"'; });
 
+    options.result = 'TestResult.xml';
+
     if(!options.version || options.version < 3) {
         nunit = options.platform === 'x86' ? 'nunit-console-x86.exe' : 'nunit-console.exe';
+        options.resultFormat = '';
     } else {
         nunit = 'nunit3-console.exe';
 
         if (options.platform === 'x86') args.push('/x86');
+
+        options.resultFormat = 'nunit2';
     }
 
     if (options.path) nunit = path.join(options.path, nunit);
 
     nunit = nunit.replace(/\\/g, path.sep);
 
+
     if (options.run && options.run.length > 0) args.push('/run:"' + options.run.join(',') + '"');
     if (options.runlist) args.push('/runlist:"' + options.runlist + '"');
     if (options.config) args.push('/config:"' + options.config + '"');
-    if (options.result) args.push('/result:"' + options.result + '"');
+    if (options.result) args.push('/result:' + options.result + (options.resultFormat ? ';format=' + options.resultFormat : ''));
     if (options.noresult) args.push('/noresult');
     if (options.output) args.push('/output:"' + options.output + '"');
-    if (options.err) args.push('/err:"' + options.err + '"');
+    if (options.err) args.push('/err:' + options.err + '');
     if (options.work) args.push('/work:"' + options.work + '"');
     if (options.labels) args.push('/labels');
     if (options.trace) args.push('/trace:' + options.trace);
@@ -142,6 +148,79 @@ exports.createTeamcityLog = function(results) {
                     var duration = node.attributes.time ? ' duration=\'' + parseInt(
                         node.attributes.time.replace(/[\.\:]/g, '')) + '\'' : '';
                     log.push('##teamcity[testFinished name=\'' + node.attributes.name + '\'' + duration + ']');
+                }
+                break;
+        }
+    };
+
+    parser.write(fs.readFileSync(results, 'utf8')).close();
+
+    return log;
+};
+
+exports.parseErrors = function(results) {
+
+    var parser = sax.parser(true);
+    var log = [];
+    var ancestors = [];
+    var message, stackTrace;
+    var testSuite = '';
+
+    var getSuiteName = function(node) { return node.attributes.type === 'Assembly' ?
+        path.basename(node.attributes.name.replace(/\\/g, path.sep)) : node.attributes.name; };
+
+    parser.onopentag = function (node) {
+        ancestors.push(node);
+        switch (node.name) {
+            case 'test-suite':
+                testSuite = getSuiteName(node);
+                break;
+            case 'test-case':
+                message = '';
+                stackTrace = '';
+                break;
+        }
+    };
+
+    parser.oncdata = function (data) {
+        data = data.
+            replace(/\|/g, '||').
+            replace(/\'/g, '|\'').
+            replace(/\n/g, '').
+            replace(/\r/g, '').
+            replace(/\u0085/g, '|x').
+            replace(/\u2028/g, '|l').
+            replace(/\u2029/g, '|p').
+            replace(/\[/g, '|[').
+            replace(/\]/g, '|]');
+
+        switch (_.last(ancestors).name) {
+            case 'message': message += data; break;
+            case 'stack-trace': stackTrace += data; break;
+        }
+    };
+
+    parser.onclosetag = function (node) {
+        node = ancestors.pop();
+        switch (node.name) {
+            case 'test-suite':
+                testSuite = '';
+                break;
+            case 'test-case':
+                if (node.attributes.executed === 'True' && node.attributes.success === 'False') {
+                    var testClassName = testSuite;
+                    var idx2 = node.attributes.name.lastIndexOf('.');
+                    var methodName = node.attributes.name.substring(idx2+1);
+                    var idx3 = node.attributes.name.length - (testClassName + '.' + methodName).length-1;
+                    var namespace = node.attributes.name.substring(0, idx3);
+
+
+
+                    log.push(   'Test Namespace:  \'' + namespace + '\'' +
+                            '\r\nTest Class:      \'' + testClassName + '\'' +
+                            '\r\nTest Name:       \'' + methodName + '\'' +
+                            (message ? '\r\nMessage:         \'' + message + '\'' : '') +
+                            (stackTrace ? '\r\nDetails:         \'' + stackTrace + '\'' : ''));
                 }
                 break;
         }

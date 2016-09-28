@@ -44,4 +44,28 @@ describe('nunit', function() {
         
     });
     
+
+    it('should detect arch correctly', function() {
+      
+        expect(nunit.buildCommand(['asm.dll'], { version: 3, platform: 'x86' }).args).to.contain('/x86');
+        expect(nunit.buildCommand(['asm.dll'], { version: 3, platform: 'x64' }).args).to.not.contain('/x86');
+        expect(nunit.buildCommand(['asm.dll'], { version: 3 }).args).to.not.contain('/x86');
+        
+        expect(nunit.buildCommand(['asm.dll'], { version: 2, platform: 'x86' }).args).to.not.contain('/x86');
+        expect(nunit.buildCommand(['asm.dll'], { version: 2, platform: 'x64' }).args).to.not.contain('/x86');
+        expect(nunit.buildCommand(['asm.dll'], { version: 2 }).args).to.not.contain('/x86');
+        
+        expect(nunit.buildCommand(['asm.dll'], { platform: 'x86' }).args).to.not.contain('/x86');
+        expect(nunit.buildCommand(['asm.dll'], { platform: 'x64' }).args).to.not.contain('/x86');
+        expect(nunit.buildCommand(['asm.dll'], {}).args).to.not.contain('/x86');
+        
+    });
+    
+    it('should append path corrctly', function() {
+      
+        expect(nunit.buildCommand(['asm.dll'], { path: 'testPath\\testPath' }).path).to.contain('testPath' + path.sep + 'testPath');
+        expect(nunit.buildCommand(['asm.dll'], { path: 'testPath' + path.sep + 'testPath' }).path).to.contain('testPath' + path.sep + 'testPath');
+        expect(nunit.buildCommand(['asm.dll'], {}).path).to.be('nunit-console.exe');
+        
+    });
 });
