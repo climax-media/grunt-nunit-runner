@@ -1,6 +1,6 @@
 var fs = require('fs'),
     path = require('path'),
-    _ = require('underscore'),
+    _ = require('lodash'),
     msbuild = require('./msbuild.js'),
     sax = require('sax');
 
@@ -17,8 +17,9 @@ exports.findTestAssemblies = function(files, options) {
             }
         }
     });
+
     projects.
-        filter(function(project) { return _.contains(project.references, 'nunit.framework'); }).
+        filter(function(project) { return _.includes(project.references, 'nunit.framework'); }).
         forEach(function(project) {
             var outputs = project.output.filter(function(output) { return fs.existsSync(output); });
             if (outputs.length === 0) throw new Error('No assemblies exist for project: ' + project.path);

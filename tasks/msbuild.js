@@ -1,6 +1,6 @@
 var fs = require('fs'),
     path = require('path'),
-    _ = require('underscore'),
+    _ = require('lodash'),
     regex = require('./regex.js');
 
 
@@ -26,7 +26,7 @@ exports.getProjectInfo = function(projectPath) {
         path: projectPath,
         references: regex.matchAll(/<Reference .*?Include\s*=\s*\"(.*?)[,\"].*?>/g, project),
         output: _.uniq(regex.matchAll(/<OutputPath.*?>(.*?)<\/OutputPath>/g, project)).
-            map(function(assemblyPath) { return path.normalize(path.join(projectDirectory, 
+            map(function(assemblyPath) { return path.normalize(path.join(projectDirectory,
                 assemblyPath.replace(/\\/g, path.sep), assemblyName)); })
     };
 };

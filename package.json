@@ -30,12 +30,12 @@
     "LICENSE"
   ],
   "dependencies": {
-    "underscore": "~1.5.2",
+    "lodash": "~4.16.2",
     "temp": "~0.6.0",
     "sax": "~1.2.1"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
+    "grunt": ">=0.4.0",
     "expect.js": "~0.2.0",
     "grunt-contrib-jshint": "~0.7.2",
     "grunt-release": "~0.6.0",
@@ -46,6 +46,6 @@
     "sinon": "~1.7.3"
   },
   "peerDependencies": {
-    "grunt": "0.4.x"
+    "grunt": ">=0.4.0"
   }
 }
