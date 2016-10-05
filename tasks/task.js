@@ -39,7 +39,9 @@ module.exports = function(grunt) {
         nunitProcess.stdout.on('data', log);
         nunitProcess.stderr.on('data', log);
 
-        nunitProcess.on('exit', function(code) { 
+        nunitProcess.on('exit', function(code) {
+            console.log(nunit.parseErrors(options.result).join('\r\n\r\n'));
+
             if (options.teamcity) console.log(nunit.createTeamcityLog(options.result).join(''));
             if (cleanup) cleanup();
             if (code > 0) {
@@ -47,11 +49,11 @@ module.exports = function(grunt) {
                 taskComplete(false);
             }
             taskComplete();
-        });  
+        });
 
-        nunitProcess.on('error', function(e) { 
+        nunitProcess.on('error', function(e) {
             grunt.log.error(e.code === 'ENOENT' ? 'Unable to find NUnit Console.exe located at ' + command.path : e.message);
             taskComplete(false);
-        });      
+        });
     });
 };
